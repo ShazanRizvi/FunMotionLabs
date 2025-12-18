@@ -37,7 +37,7 @@ const Root = () => {
   return (
 
    
-       <div className="relative w-full">
+       <div className=" h-screen w-full ">
             <Navbar>
               {/* Desktop Navigation */}
               <NavBody>

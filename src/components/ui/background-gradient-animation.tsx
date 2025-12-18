@@ -5,13 +5,13 @@ import { HoverBorderGradient } from "@/components/ui/hover-border-gradient.tsx";
 import { Hand, Zap, Gamepad2 } from 'lucide-react';
 
 export const BackgroundGradientAnimation = ({
-  gradientBackgroundStart = "black",
-  gradientBackgroundEnd = "black",
+  gradientBackgroundStart = "73, 143, 254",
+  gradientBackgroundEnd = "99, 102, 241",
   firstColor = "18, 113, 255",
-  secondColor = "170, 77, 255",
-  thirdColor = "white",
-  fourthColor = "black",
-  fifthColor = "black",
+  secondColor = "99, 102, 241",
+  thirdColor = "59, 130, 246",
+  fourthColor = "125,173,252",
+  fifthColor = "163,198,255",
   pointerColor = "73, 143, 254",
   size = "80%",
   blendingValue = "soft-light",
