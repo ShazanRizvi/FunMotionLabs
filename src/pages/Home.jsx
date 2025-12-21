@@ -2,6 +2,7 @@ import React from "react";
 import Hero from "../AppComponents/Hero";
 import { Carousel, Card } from "@/components/ui/apple-cards-carousel";
 
+
 const Home = () => {
   const cards = data.map((card, index) => (
     <Card key={card.src} card={card} index={index} />
@@ -18,6 +19,7 @@ const Home = () => {
         Games by Us!
       </h2>
       <Carousel items={cards} />
+     
     </div>
     </div>
   );

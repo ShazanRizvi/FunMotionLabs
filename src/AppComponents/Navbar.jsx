@@ -37,7 +37,7 @@ const AppNavbar = () => {
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
             <NavbarButton variant="secondary">Login</NavbarButton>
-            <NavbarButton variant="primary">Book a call</NavbarButton>
+            <NavbarButton>Book a call</NavbarButton>
           </div>
         </NavBody>
  
@@ -75,7 +75,7 @@ const AppNavbar = () => {
               </NavbarButton>
               <NavbarButton
                 onClick={() => setIsMobileMenuOpen(false)}
-                variant="dark"
+           
                 className="w-full"
               >
                 Book a call

@@ -1,19 +1,18 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
-import { HoverBorderGradient } from "@/components/ui/hover-border-gradient.tsx";
-import { Hand, Zap, Gamepad2 } from 'lucide-react';
+
 
 export const BackgroundGradientAnimation = ({
-  gradientBackgroundStart = "73, 143, 254",
-  gradientBackgroundEnd = "99, 102, 241",
-  firstColor = "18, 113, 255",
-  secondColor = "99, 102, 241",
-  thirdColor = "59, 130, 246",
-  fourthColor = "125,173,252",
-  fifthColor = "163,198,255",
-  pointerColor = "73, 143, 254",
-  size = "80%",
+  gradientBackgroundStart = "rgb(243,242,238)",
+  gradientBackgroundEnd = "white",
+  firstColor = "113,165,204",
+  secondColor = "178,203,251",
+  thirdColor = "178,203,251",
+  fourthColor = "244,243,239",
+  fifthColor = "74,134,236",
+  pointerColor = "249,230, 193",
+  size = "90%",
   blendingValue = "soft-light",
   children,
   className,
@@ -101,7 +100,7 @@ export const BackgroundGradientAnimation = ({
           <filter id="blurMe">
             <feGaussianBlur
               in="SourceGraphic"
-              stdDeviation="10"
+              stdDeviation="20"
               result="blur"
             />
             <feColorMatrix
@@ -117,8 +116,8 @@ export const BackgroundGradientAnimation = ({
       <div className={cn("", className)}>{children}</div>
       <div
         className={cn(
-          "gradients-container h-full w-full blur-lg",
-          isSafari ? "blur-2xl" : "[filter:url(#blurMe)_blur(40px)]"
+          "gradients-container h-full w-full blur-xl",
+          isSafari ? "blur-4xl" : "[filter:url(#blurMe)_blur(40px)]"
         )}
       >
         <div

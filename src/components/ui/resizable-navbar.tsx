@@ -243,7 +243,7 @@ export const NavbarLogo = () => {
         width={30}
         height={30}
       />
-      <span className="font-medium text-black dark:text-white">FunMotionLabs</span>
+      <span className="font-bold  text-black  dark:text-white">FunMotionLabs</span>
     </a>
   );
 };
