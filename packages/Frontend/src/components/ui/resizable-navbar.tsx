@@ -70,7 +70,7 @@ export const Navbar = ({ children, className }: NavbarProps) => {
     <motion.div
       ref={ref}
       // IMPORTANT: Change this to class of `fixed` if you want the navbar to be fixed
-      className={cn("sticky inset-x-0 top-0 z-60 w-full", className)}
+      className={cn("fixed inset-x-0 top-0 z-60 w-full", className)}
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
@@ -101,11 +101,11 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         damping: 50,
       }}
       style={{
-        minWidth: "800px",
+        minWidth: "900px",
       }}
       className={cn(
-        "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
-        visible && "bg-white/80 dark:bg-neutral-950/80",
+        "relative z-[60] text-white mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-2 py-2 lg:flex dark:bg-transparent",
+        visible && "bg-white/80 text-black dark:bg-neutral-950/80",
         className,
       )}
     >
@@ -121,7 +121,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
     <motion.div
       onMouseLeave={() => setHovered(null)}
       className={cn(
-        "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2",
+        "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium  transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2 outfit-regular ",
         className,
       )}
     >
@@ -129,7 +129,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
         <a
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
-          className="relative px-2 py-2 text-neutral-600 dark:text-neutral-300"
+          className="relative px-2 py-2 text-white-600 dark:text-white-300"
           key={`link-${idx}`}
           href={item.link}
         >
@@ -232,6 +232,20 @@ export const MobileNavToggle = ({
 };
 
 export const NavbarLogo = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  const [visible, setVisible] = useState<boolean>(false);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (latest > 100) {
+      setVisible(true);
+    } else {
+      setVisible(false);
+    }
+  });
   return (
     <a
       href="#"
@@ -243,7 +257,7 @@ export const NavbarLogo = () => {
         width={30}
         height={30}
       />
-      <span className="font-bold  text-black  dark:text-white">FunMotionLabs</span>
+      <span className={cn("font-bold  text-white  dark:text-white outfit-regular text-2xl", visible && "text-black text-2xl")}>FunMotionLabs</span>
     </a>
   );
 };
@@ -265,8 +279,22 @@ export const NavbarButton = ({
   | React.ComponentPropsWithoutRef<"a">
   | React.ComponentPropsWithoutRef<"button">
 )) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  const [visible, setVisible] = useState<boolean>(false);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (latest > 100) {
+      setVisible(true);
+    } else {
+      setVisible(false);
+    }
+  });
   const baseStyles =
-    "px-4 py-2 rounded-full bg-white button bg-white text-black text-sm font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center";
+    "px-4 py-2 rounded-full bg-white button bg-white text-black text-sm font-bold relative cursor-pointer hover:-translate-y-0.5 transition duration-200 inline-block text-center outfit-regular";
 
   const variantStyles = {
     primary:
@@ -274,13 +302,13 @@ export const NavbarButton = ({
     secondary: "bg-transparent shadow-none dark:text-white ",
     dark: "bg-black text-white shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]",
     gradient:
-      "bg-gradient-to-r from-[#488FFE] to-purple-500 text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]",
+      "bg-gradient-to-r from-primary-blue  to-primary-blue text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]",
   };
 
   return (
     <Tag
       href={href || undefined}
-      className={cn(baseStyles, variantStyles[variant], className)}
+      className={cn(baseStyles, variantStyles[variant], className, visible ? "text-black" : "text-white")}
       {...props}
     >
       {children}

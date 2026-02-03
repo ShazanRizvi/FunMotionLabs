@@ -25,12 +25,16 @@ const Root = () => {
         link: "#pricing",
       },
       {
-        name: "What we offer",
-        link: "#contact",
+        name: "Build with Us",
+        link: "#build_with_us",
       },
       {
-        name: "Contact",
-        link: "#contact",
+        name: "Blogs",
+        link: "#blogs",
+      },
+      {
+        name: "Payments",
+        link: "#payments",
       },
     ];
    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

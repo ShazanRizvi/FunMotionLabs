@@ -1,0 +1,53 @@
+# Production Dockerfile for Express Backend
+FROM node:18 AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev dependencies for Prisma)
+# Use npm install since we're in a workspace setup
+RUN npm install
+
+# Copy Prisma schema
+COPY prisma ./prisma
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Production stage
+FROM node:18
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies only
+# Use npm install since we're in a workspace setup
+RUN npm install --only=production
+
+# Copy Prisma schema and generated client from builder
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY prisma ./prisma
+
+# Copy source code
+COPY . .
+
+# Copy entrypoint script and set permissions
+COPY docker-entrypoint.sh /entrypoint.sh
+
+# Create non-root user and set entrypoint permissions
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chmod +x /entrypoint.sh
+
+USER nodejs
+
+EXPOSE 3001
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["npm", "start"]

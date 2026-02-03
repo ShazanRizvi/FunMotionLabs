@@ -12,21 +12,7 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
 
-const AppNavbar = () => {
-  const navItems = [
-    {
-      name: "Features",
-      link: "#features",
-    },
-    {
-      name: "Pricing",
-      link: "#pricing",
-    },
-    {
-      name: "Contact",
-      link: "#contact",
-    },
-  ];
+
  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   return (
     <div className="relative w-full">
@@ -36,7 +22,7 @@ const AppNavbar = () => {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary">Login</NavbarButton>
+            <NavbarButton variant="secondary">Subscribe</NavbarButton>
             <NavbarButton>Book a call</NavbarButton>
           </div>
         </NavBody>

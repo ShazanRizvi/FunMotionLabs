@@ -1,0 +1,21 @@
+{
+  "version": "independent",
+  "npmClient": "npm",
+  "command": {
+    "bootstrap": {
+      "ignore": "component-*",
+      "npmClientArgs": ["--no-package-lock"]
+    },
+    "publish": {
+      "ignoreChanges": ["ignored-file", "*.md"],
+      "message": "chore(release): publish",
+      "registry": "https://registry.npmjs.org/"
+    },
+    "run": {
+      "stream": true
+    }
+  },
+  "packages": [
+    "packages/*"
+  ]
+}

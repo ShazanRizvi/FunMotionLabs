@@ -1,0 +1,358 @@
+"use client";
+import { cn } from "@/lib/utils";
+import React, { useEffect, useRef } from "react";
+import { createNoise3D } from "simplex-noise";
+import { motion } from "motion/react";
+
+interface VortexProps {
+  children?: any;
+  className?: string;
+  containerClassName?: string;
+  particleCount?: number;
+  rangeY?: number;
+  baseHue?: number;
+  baseSpeed?: number;
+  rangeSpeed?: number;
+  baseRadius?: number;
+  rangeRadius?: number;
+  backgroundColor?: string;
+  backgroundOpacity?: number;
+}
+const defaultParticleColors = [
+  "#FFF9D0",
+  "#4A6475",
+  "#CAF4FF",
+  "#A0DEFF",
+  "#65DAF7",
+  "#4B89EE",
+];
+
+// Helper function to check if a color is light or dark
+const isLightColor = (color: string): boolean => {
+  // Remove # if present
+  const hex = color.replace('#', '');
+
+
+  // Convert to RGB
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  return luminance > 0.5;
+};
+
+export const Vortex = (props: VortexProps) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef(null);
+  const animationFrameId = useRef<number>();
+  const particleCount = props.particleCount || 1000;
+  const particlePropCount = 9;
+  const particlePropsLength = particleCount * particlePropCount;
+  const rangeY = props.rangeY || 100;
+  const baseTTL = 50;
+  const rangeTTL = 150;
+  const baseSpeed = props.baseSpeed || 0.0;
+  const rangeSpeed = props.rangeSpeed || 1.5;
+  const baseRadius = props.baseRadius || 1;
+  const rangeRadius = props.rangeRadius || 2;
+  const baseHue = props.baseHue || 220;
+  const rangeHue = 100;
+  const noiseSteps = 3;
+  const xOff = 0.00125;
+  const yOff = 0.00125;
+  const zOff = 0.0005;
+  const backgroundColor = props.backgroundColor || "#000000";
+  
+  // Determine if background is light and adjust particle lightness accordingly
+  const isLightBg = isLightColor(backgroundColor);
+  const particleLightness = isLightBg ? 30 : 60; // Darker particles for light backgrounds
+  
+  let tick = 0;
+  const noise3D = createNoise3D();
+  let particleProps = new Float32Array(particlePropsLength);
+  let center: [number, number] = [0, 0];
+
+  const HALF_PI: number = 0.5 * Math.PI;
+  const TAU: number = 2 * Math.PI;
+  const TO_RAD: number = Math.PI / 180;
+  const rand = (n: number): number => n * Math.random();
+  const randRange = (n: number): number => n - rand(2 * n);
+  const fadeInOut = (t: number, m: number): number => {
+    let hm = 0.5 * m;
+    return Math.abs(((t + hm) % m) - hm) / hm;
+  };
+  const lerp = (n1: number, n2: number, speed: number): number =>
+    (1 - speed) * n1 + speed * n2;
+
+  const setup = () => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (canvas && container) {
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+        resize(canvas, ctx);
+        initParticles();
+        draw(canvas, ctx);
+      }
+    }
+  };
+
+  const initParticles = () => {
+    tick = 0;
+    particleProps = new Float32Array(particlePropsLength);
+
+    for (let i = 0; i < particlePropsLength; i += particlePropCount) {
+      initParticle(i);
+    }
+  };
+
+  const initParticle = (i: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    let x, y, vx, vy, life, ttl, speed, radius, hue;
+
+    x = rand(canvas.width);
+    y = center[1] + randRange(rangeY);
+    vx = 0;
+    vy = 0;
+    life = 0;
+    ttl = baseTTL + rand(rangeTTL);
+    speed = baseSpeed + rand(rangeSpeed);
+    radius = baseRadius + rand(rangeRadius);
+    hue = baseHue + rand(rangeHue);
+
+    particleProps.set([x, y, vx, vy, life, ttl, speed, radius, hue], i);
+  };
+
+  const draw = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
+    tick++;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const bg = hexToRgb(backgroundColor);
+  if (bg) {
+    ctx.fillStyle = `rgba(${bg.r}, ${bg.g}, ${bg.b}, ${backgroundOpacity})`;
+  } else {
+    ctx.fillStyle = backgroundColor; // fallback if non-hex is passed
+  }
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    drawParticles(ctx);
+    renderGlow(canvas, ctx);
+    renderToScreen(canvas, ctx);
+
+    animationFrameId.current = window.requestAnimationFrame(() =>
+      draw(canvas, ctx),
+    );
+  };
+
+  const drawParticles = (ctx: CanvasRenderingContext2D) => {
+    for (let i = 0; i < particlePropsLength; i += particlePropCount) {
+      updateParticle(i, ctx);
+    }
+  };
+
+  const updateParticle = (i: number, ctx: CanvasRenderingContext2D) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    let i2 = 1 + i,
+      i3 = 2 + i,
+      i4 = 3 + i,
+      i5 = 4 + i,
+      i6 = 5 + i,
+      i7 = 6 + i,
+      i8 = 7 + i,
+      i9 = 8 + i;
+    let n, x, y, vx, vy, life, ttl, speed, x2, y2, radius, hue;
+
+    x = particleProps[i];
+    y = particleProps[i2];
+    n = noise3D(x * xOff, y * yOff, tick * zOff) * noiseSteps * TAU;
+    vx = lerp(particleProps[i3], Math.cos(n), 0.5);
+    vy = lerp(particleProps[i4], Math.sin(n), 0.5);
+    life = particleProps[i5];
+    ttl = particleProps[i6];
+    speed = particleProps[i7];
+    x2 = x + vx * speed;
+    y2 = y + vy * speed;
+    radius = particleProps[i8];
+    hue = particleProps[i9];
+
+    drawParticle(x, y, x2, y2, life, ttl, radius, hue, ctx);
+
+    life++;
+
+    particleProps[i] = x2;
+    particleProps[i2] = y2;
+    particleProps[i3] = vx;
+    particleProps[i4] = vy;
+    particleProps[i5] = life;
+
+    (checkBounds(x, y, canvas) || life > ttl) && initParticle(i);
+  };
+  const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+  const backgroundOpacity = clamp01(props.backgroundOpacity ?? 1);
+    // helper (add near isLightColor)
+const hexToRgb = (hex: string) => {
+  const h = hex.replace("#", "").trim();
+  if (h.length !== 6) return null;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return { r, g, b };
+};
+  const palette = (props.particleColors ?? defaultParticleColors)
+    .map(hexToRgb)
+    .filter(Boolean) as { r: number; g: number; b: number }[];
+
+    const drawParticle = (
+      x: number,
+      y: number,
+      x2: number,
+      y2: number,
+      life: number,
+      ttl: number,
+      radius: number,
+      hue: number,
+      ctx: CanvasRenderingContext2D,
+    ) => {
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineWidth = radius;
+  
+      const alpha = fadeInOut(life, ttl);
+  
+      // Map existing per-particle hue to one of your palette colors (without touching motion/size)
+      const t = rangeHue ? (hue - baseHue) / rangeHue : 0; // 0..1-ish
+      const idx =
+        palette.length > 0
+          ? Math.floor((((t % 1) + 1) % 1) * palette.length) // wrap into 0..1
+          : 0;
+  
+      const c = palette[idx] ?? { r: 255, g: 255, b: 255 };
+      ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${alpha})`;
+  
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.closePath();
+      ctx.restore();
+    };
+  
+
+  const checkBounds = (x: number, y: number, canvas: HTMLCanvasElement) => {
+    return x > canvas.width || x < 0 || y > canvas.height || y < 0;
+  };
+
+  const resize = (
+    canvas: HTMLCanvasElement,
+    ctx?: CanvasRenderingContext2D,
+  ) => {
+    const { innerWidth, innerHeight } = window;
+
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+
+    center[0] = 0.5 * canvas.width;
+    center[1] = 0.5 * canvas.height;
+  };
+
+  const renderGlow = (
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+  ) => {
+    // Adjust glow effects for light backgrounds
+    if (isLightBg) {
+      ctx.save();
+      ctx.filter = "blur(8px) brightness(150%)";
+      ctx.globalCompositeOperation = "multiply";
+      ctx.drawImage(canvas, 0, 0);
+      ctx.restore();
+
+      ctx.save();
+      ctx.filter = "blur(4px) brightness(150%)";
+      ctx.globalCompositeOperation = "multiply";
+      ctx.drawImage(canvas, 0, 0);
+      ctx.restore();
+    } else {
+      ctx.save();
+      ctx.filter = "blur(8px) brightness(200%)";
+      ctx.globalCompositeOperation = "lighter";
+      ctx.drawImage(canvas, 0, 0);
+      ctx.restore();
+
+      ctx.save();
+      ctx.filter = "blur(4px) brightness(200%)";
+      ctx.globalCompositeOperation = "lighter";
+      ctx.drawImage(canvas, 0, 0);
+      ctx.restore();
+    }
+  };
+
+  const renderToScreen = (
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+  ) => {
+    if (isLightBg) {
+      ctx.save();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.drawImage(canvas, 0, 0);
+      ctx.restore();
+    } else {
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      ctx.drawImage(canvas, 0, 0);
+      ctx.restore();
+    }
+  };
+
+  const handleResize = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (canvas && ctx) {
+      resize(canvas, ctx);
+    }
+  };
+
+  useEffect(() => {
+    setup();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div className={cn("relative z-10 h-full w-full shadow shadow-4xl   ", props.containerClassName)}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        ref={containerRef}
+        className="absolute inset-0 z-0 overflow-hidden "
+        style={{
+          backgroundColor: hexToRgb(backgroundColor)
+            ? `rgba(${hexToRgb(backgroundColor)!.r}, ${hexToRgb(backgroundColor)!.g}, ${hexToRgb(backgroundColor)!.b}, ${backgroundOpacity})`
+            : backgroundColor,
+        }}
+      >
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full"></canvas>
+       
+      </motion.div>
+
+      <div className={cn("relative z-10", props.className)}>
+        {props.children}
+      </div>
+    </div>
+  );
+};
