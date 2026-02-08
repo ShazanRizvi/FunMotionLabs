@@ -231,7 +231,7 @@ export const MobileNavToggle = ({
   );
 };
 
-export const NavbarLogo = () => {
+export const NavbarLogo = ({ forceDarkText = false }: { forceDarkText?: boolean }) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({
     target: ref,
@@ -257,7 +257,14 @@ export const NavbarLogo = () => {
         width={30}
         height={30}
       />
-      <span className={cn("font-bold  text-white  dark:text-white outfit-regular text-2xl", visible && "text-black text-2xl")}>FunMotionLabs</span>
+      <span
+        className={cn(
+          "font-bold text-white dark:text-white outfit-regular text-2xl",
+          (visible || forceDarkText) && "text-black text-2xl",
+        )}
+      >
+        FunMotionLabs
+      </span>
     </a>
   );
 };
@@ -267,6 +274,7 @@ export const NavbarButton = ({
   as: Tag = "a",
   children,
   className,
+  forceDarkText = false,
   variant = "primary",
   ...props
 }: {
@@ -274,6 +282,7 @@ export const NavbarButton = ({
   as?: React.ElementType;
   children: React.ReactNode;
   className?: string;
+  forceDarkText?: boolean;
   variant?: "primary" | "secondary" | "dark" | "gradient";
 } & (
   | React.ComponentPropsWithoutRef<"a">
@@ -308,7 +317,12 @@ export const NavbarButton = ({
   return (
     <Tag
       href={href || undefined}
-      className={cn(baseStyles, variantStyles[variant], className, visible ? "text-black" : "text-white")}
+      className={cn(
+        baseStyles,
+        variantStyles[variant],
+        className,
+        (visible || forceDarkText) ? "text-black" : "text-white",
+      )}
       {...props}
     >
       {children}

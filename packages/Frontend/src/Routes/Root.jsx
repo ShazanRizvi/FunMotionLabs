@@ -1,5 +1,5 @@
 import React from 'react'
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 //import Navbar from "@/AppComponents/Navbar";
 import {
   Navbar,
@@ -12,17 +12,24 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
+import Footer from "@/AppComponents/Footer";
 import { useState } from "react";
 
 const Root = () => {
+   const location = useLocation();
+   const isGameDetailPage = /^\/games\/[^/]+$/.test(location.pathname);
    const navItems = [
       {
         name: "Home",
-        link: "#features",
+        link: "/",
       },
       {
         name: "About",
-        link: "#pricing",
+        link: "/about",
+      },
+      {
+        name: "Games",
+        link: "/games",
       },
       {
         name: "Build with Us",
@@ -30,7 +37,7 @@ const Root = () => {
       },
       {
         name: "Blogs",
-        link: "#blogs",
+        link: "/blogs",
       },
       {
         name: "Payments",
@@ -44,12 +51,14 @@ const Root = () => {
        <div className=" h-screen w-screen">
             <Navbar>
               {/* Desktop Navigation */}
-              <NavBody>
-                <NavbarLogo />
+              <NavBody
+                className={isGameDetailPage ? "bg-white/90 text-black backdrop-blur-sm shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]" : ""}
+              >
+                <NavbarLogo forceDarkText={isGameDetailPage} />
                 <NavItems items={navItems} />
                 <div className="flex items-center gap-1">
-                  <NavbarButton  variant="secondary">Subscribe</NavbarButton>
-                  <NavbarButton variant="gradient">Book a call</NavbarButton>
+                  <NavbarButton forceDarkText={isGameDetailPage} variant="secondary">Subscribe</NavbarButton>
+                  <NavbarButton forceDarkText={isGameDetailPage} variant="gradient">Book a call</NavbarButton>
                 </div>
               </NavBody>
        
@@ -97,6 +106,9 @@ const Root = () => {
               </MobileNav>
             </Navbar>
       <Outlet />
+      <div className="w-full bg-blue-900 ">
+      <Footer/>
+    </div>
      
     </div>
   )

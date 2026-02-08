@@ -5,10 +5,9 @@ import SecondaryHero from "../AppComponents/SecondaryHero";
 import Featured from "../AppComponents/Featured";
 import MissionVision from "../AppComponents/MissionVision";
 import ShopCta from "../AppComponents/ShopCta";
+import Footer from "../AppComponents/Footer";
 
 const Home = () => {
- 
- 
   return (
     <div className="absolute w-full h-screen bg-blue-400">
       <div className="relative top-0 left-0 right-0">
@@ -17,16 +16,18 @@ const Home = () => {
       <div className="relative max-w-full mx-auto ">
         <SecondaryHero />
     </div>
-    <div className="relative max-w-full mx-auto h-full flex  justify-center ">
+    <div className="relative max-w-full mx-auto mb-20 flex  justify-center ">
       <MissionVision/>
     </div>
     <div className="relative max-w-full mx-auto">
       <Featured/>
     </div>
-    <div className="relative max-w-full mx-auto h-full flex items-center justify-center ">
+    <div className="relative max-w-full mx-auto mb-20 flex mt-20 justify-center ">
       <ShopCta/>
     </div>
-   
+    <div className="w-full bg-blue-900 ">
+      <Footer/>
+    </div>
     </div>
   );
 };

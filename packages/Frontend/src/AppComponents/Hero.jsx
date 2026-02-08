@@ -21,7 +21,7 @@ const Hero = () => {
 
       <div className="absolute h-screen w-full z-50 inset-0 flex items-center justify-center text-white font-bold px-4 pointer-events-none text-6xl text-left ">
         <div className="p-10">
-          <MainText />
+          <MainText words={["FunMotionLabs", "फनमोशनलैब्स", "ファンモーションラボ", "ФунМошенЛабс"]} subtext="Revolutonizing the way we move and play." />
           
          
           <div className="mt-10 flex justify-center gap-6 pointer-events-auto">
