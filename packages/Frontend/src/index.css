@@ -170,6 +170,30 @@
   }
 }
 
+.home-grunge-bg {
+  background-color: var(--color-soft-cream);
+  background-image:
+    linear-gradient(0deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)),
+    repeating-linear-gradient(
+      45deg,
+      rgba(0, 0, 0, 0.025) 0,
+      rgba(0, 0, 0, 0.025) 2px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0) 7px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(0, 0, 0, 0.02) 0,
+      rgba(0, 0, 0, 0.02) 1px,
+      rgba(0, 0, 0, 0) 1px,
+      rgba(0, 0, 0, 0) 6px
+    ),
+    radial-gradient(circle at 15% 20%, rgba(0, 0, 0, 0.05), transparent 35%),
+    radial-gradient(circle at 80% 30%, rgba(0, 0, 0, 0.04), transparent 40%),
+    radial-gradient(circle at 30% 85%, rgba(0, 0, 0, 0.035), transparent 45%);
+  background-blend-mode: multiply, normal, normal, normal, normal, normal;
+}
+
 
 @keyframes moveHorizontal {
   0% {
@@ -206,4 +230,3 @@
     transform: translateY(-50%);
   }
 }
-

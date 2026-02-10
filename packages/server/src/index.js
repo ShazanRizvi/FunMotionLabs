@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { initDatabase, disconnectDatabase } from './lib/db-init.js';
 import prisma from './lib/prisma.js';
+import blogRoutes from './routes/blogRoutes.js';
+import gamesRoutes from './routes/gamesRoutes.js';
 
 // Load environment variables from root .env file
 dotenv.config({ path: '../../.env' });
@@ -34,20 +36,8 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// API routes
-app.get('/api', (req, res) => {
-  res.json({ message: 'Welcome to FunMotionLabs API' });
-});
-
-// Example API route using Prisma
-app.get('/api/users', async (req, res) => {
-  try {
-    const users = await prisma.user.findMany();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+app.use('/api', blogRoutes);
+app.use('/api', gamesRoutes);
 
 // Start server
 app.listen(PORT, '0.0.0.0', async () => {

@@ -64,7 +64,7 @@ export const Vortex = (props: VortexProps) => {
   const xOff = 0.00125;
   const yOff = 0.00125;
   const zOff = 0.0005;
-  const backgroundColor = props.backgroundColor || "#000000";
+  const backgroundColor = props.backgroundColor || "transparent";
   
   // Determine if background is light and adjust particle lightness accordingly
   const isLightBg = isLightColor(backgroundColor);

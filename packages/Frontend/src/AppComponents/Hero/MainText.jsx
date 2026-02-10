@@ -12,7 +12,7 @@ const MainText = ({words, subtext}) => {
          
        />
      </motion.div>
-     <p className="mt-3 max-w-7xl bg-clip-text font-medium text-lg lg:text-2xl text-center text-white/80 drop-shadow-xl bg-gradient-to-b from-white/10 to-white/20 oswald-regular">
+     <p className="mt-3 max-w-7xl bg-clip-text font-medium text-lg lg:text-2xl text-center text-white/80 drop-shadow-xl bg-gradient-to-b from-white/10 to-white/20 outfit-regular">
      {subtext}
      </p>
    </div>

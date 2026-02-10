@@ -23,6 +23,8 @@ services:
     build:
       context: ./packages/Frontend
       dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
     container_name: funmotionlabs-frontend-prod
     ports:
       - "80:80"

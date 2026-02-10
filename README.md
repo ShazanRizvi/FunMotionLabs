@@ -25,38 +25,31 @@ FunMotionLabs/
 
 ## Setup
 
-### Option 1: Using Docker (Recommended for Development)
+### Option 1: Docker (Development)
 
-1. **Create environment file:**
+1. **Create environment file**
    ```bash
    cp .env.example .env
    ```
-   Edit `.env` file with your configuration if needed.
 
-2. **Build and start all services:**
+2. **Build and start all services**
    ```bash
    npm run docker:dev
    ```
-   Or manually:
-   ```bash
-   docker-compose build
-   docker-compose up
-   ```
 
-3. **Run database migrations:**
-   ```bash
-   docker-compose exec backend npx prisma migrate dev
-   ```
-
-4. **Access the applications:**
+3. **Access the applications**
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:3001
    - PostgreSQL: localhost:5432
 
-5. **Stop services:**
+4. **Stop services**
    ```bash
    npm run docker:down
    ```
+
+Notes:
+- In dev, the backend entrypoint installs dependencies into the mounted `node_modules` if needed and runs Prisma migrations automatically.
+- If you change the Prisma schema, re-run the dev stack to apply migrations.
 
 ### Option 2: Local Development (Without Docker)
 
@@ -201,18 +194,30 @@ Lerna is configured to:
 - Run commands in parallel across packages
 - Manage independent versioning
 
-## Production Build
+## Production Build (Docker)
 
-To build and run in production mode:
+1. **Create environment file**
+   ```bash
+   cp .env.example .env
+   ```
 
-```bash
-docker-compose -f docker-compose.prod.yml up --build
-```
+2. **Build and run**
+   ```bash
+   docker-compose -f docker-compose.prod.yml up --build -d
+   ```
 
-This will:
-- Build optimized production images
-- Serve frontend via Nginx on port 80
-- Run backend in production mode on port 3001
+3. **Access the applications**
+   - Frontend: http://localhost:80
+   - Backend API: http://localhost:3001
+
+4. **Stop services**
+   ```bash
+   docker-compose -f docker-compose.prod.yml down
+   ```
+
+Notes:
+- Production runs Prisma migrations on container startup via `prisma migrate deploy`.
+- The frontend image is built with `VITE_API_URL` from `.env` (or defaults to `http://localhost:3001`).
 
 ## Troubleshooting
 

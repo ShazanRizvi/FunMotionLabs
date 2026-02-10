@@ -13,8 +13,44 @@ datasource db {
 model Blogs {
   id        String   @id @default(uuid())
   title      String?
+  Author String?
+  timetoRead Int?
+  image String?
+  excerpt String?
+  publishedAt DateTime?
+  isPopular Boolean?
+  isFeatured Boolean?
+  isArchived Boolean?
+  isDeleted Boolean?
+  isPublished Boolean?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   content   String?
   @@map("blogs")
+}
+
+model Games{
+  id        String   @id @default(uuid())
+  title      String?
+  description String?
+  image String?
+  cardImageUrl String?
+  bannerImageUrl String?
+  heroVideoUrls String[]
+  detailImageUrls String[]
+  displayOrder Int?
+  genre String?
+  platform String?
+  studio String?
+  rating Float?
+  releaseDate DateTime?
+  publishedAt DateTime?
+  isPopular Boolean?
+  isFeatured Boolean?
+  isArchived Boolean?
+  isDeleted Boolean?
+  isPublished Boolean?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("games")
 }

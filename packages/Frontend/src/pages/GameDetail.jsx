@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { getGameById } from '@/lib/games.js'
 import { StickyScroll } from '@/components/ui/sticky-scroll-reveal'
@@ -25,6 +25,7 @@ const GameDetail = () => {
   const { id } = useParams()
   const location = useLocation()
   const [activeVideo, setActiveVideo] = useState(0)
+  const videoRef = useRef(null)
 
   const gameFromState = location.state?.game
   const game =
@@ -51,6 +52,16 @@ const GameDetail = () => {
     }, 5500)
     return () => window.clearInterval(timer)
   }, [gameplayVideos.length])
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    video.currentTime = 0
+    const playPromise = video.play()
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {})
+    }
+  }, [activeVideo])
 
   if (!game) {
     return (
@@ -126,7 +137,7 @@ const GameDetail = () => {
   return (
     <div className="min-h-screen bg-neutral-100">
       <div className="pt-20 pb-10 px-6">
-        <div className="max-w-7xl mx-auto">
+        {/* <div className="max-w-7xl mx-auto">
           <div className=" rounded-3xl p-6 sm:p-8 bg-transparent">
             <div className="max-w-3xl mx-auto">
               <img
@@ -136,30 +147,24 @@ const GameDetail = () => {
               />
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
-      <section className="relative max-w-7xl mx-auto px-6 pb-10">
+      <section className="relative mt-10 max-w-7xl mx-auto px-6 pb-10">
         <div className="relative overflow-hidden rounded-[2rem] min-h-[420px] sm:min-h-[520px]">
-          {gameplayVideos.map((videoSrc, index) => (
-            <video
-              key={videoSrc}
-              src={videoSrc}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-                activeVideo === index ? 'opacity-100' : 'opacity-0'
-              }`}
-            />
-          ))}
-          <img
-            src={heroGif}
-            alt={game.title}
-            className="absolute inset-0 w-full h-full object-cover opacity-20"
+          <video
+            key={gameplayVideos[activeVideo]}
+            ref={videoRef}
+            src={gameplayVideos[activeVideo]}
+            poster={detailImages[activeVideo % detailImages.length]}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 opacity-100"
           />
+          
           <div className="absolute inset-0 bg-gradient-to-r from-sky-900/85 via-cyan-900/60 to-black/20" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_32%,rgba(255,255,255,0.22),transparent_46%)]" />
 
@@ -214,7 +219,7 @@ const GameDetail = () => {
           </div>
           <Link
             to="/games"
-            className="px-3 py-2 cursor-pointer bg-white text-sm text-gray-900 rounded-full hover:shadow-lg transition-all border border-gray-200 outfit-regular group flex items-center gap-2"
+            className="px-3 py-2 cursor-pointer bg-pastel-blue text-sm text-gray-900 rounded-full hover:shadow-lg transition-all border border-gray-200 outfit-regular group flex items-center gap-2"
           >
             <span><IconArrowBackUp /></span>
             <span className=" text-sm outfit-regular">Back to Catalogue</span>
