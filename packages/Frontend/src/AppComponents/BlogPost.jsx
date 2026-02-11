@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 
 const BlogPost = ({ blog }) => {
   if (!blog) return null;
@@ -23,6 +24,10 @@ const BlogPost = ({ blog }) => {
     hidden: { opacity: 0, y: 14 },
     show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
+
+  const markdownContent = Array.isArray(blog.content)
+    ? blog.content.join("\n\n")
+    : blog.content ?? "";
 
   return (
     <div className="w-full bg-neutral-100">
@@ -98,12 +103,8 @@ const BlogPost = ({ blog }) => {
           variants={item}
           className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 sm:p-10 shadow-xl border border-white/70"
         >
-          <div className="space-y-6 text-lg leading-8 text-gray-800 outfit-regular">
-            {blog.content.map((paragraph, index) => (
-              <motion.p key={index} variants={item}>
-                {paragraph}
-              </motion.p>
-            ))}
+          <div className="prose prose-lg max-w-none prose-headings:outfit-bold prose-p:outfit-regular prose-li:outfit-regular prose-a:text-blue-600 prose-strong:text-gray-900 text-gray-800">
+            <ReactMarkdown>{markdownContent}</ReactMarkdown>
           </div>
         </motion.div>
       </motion.section>

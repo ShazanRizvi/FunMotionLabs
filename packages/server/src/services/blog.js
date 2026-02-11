@@ -13,6 +13,38 @@ const parseReadTime = (readTime) => {
   return undefined;
 };
 
+const normalizeMarkdownContent = (content) => {
+  if (content == null) return undefined;
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => String(part ?? '').trim())
+      .filter(Boolean)
+      .join('\n\n');
+  }
+  if (typeof content === 'string') {
+    return content;
+  }
+  return String(content);
+};
+
+const tryConvertLegacyContent = (content) => {
+  if (typeof content !== 'string') return content;
+
+  try {
+    const parsed = JSON.parse(content);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map((part) => String(part ?? '').trim())
+        .filter(Boolean)
+        .join('\n\n');
+    }
+  } catch {
+    // keep original markdown/plain string
+  }
+
+  return content;
+};
+
 const normalizeBlogInput = (data = {}) => {
   const {
     title,
@@ -52,7 +84,7 @@ const normalizeBlogInput = (data = {}) => {
   }
 
   if (content !== undefined) {
-    normalized.content = Array.isArray(content) ? JSON.stringify(content) : content;
+    normalized.content = normalizeMarkdownContent(content);
   }
 
   return normalized;
@@ -60,18 +92,7 @@ const normalizeBlogInput = (data = {}) => {
 
 const deserializeBlog = (blog) => {
   if (!blog) return blog;
-  let content = blog.content;
-  if (typeof content === 'string') {
-    try {
-      const parsed = JSON.parse(content);
-      if (Array.isArray(parsed)) {
-        content = parsed;
-      }
-    } catch {
-      // keep original string
-    }
-  }
-  return { ...blog, content };
+  return { ...blog, content: tryConvertLegacyContent(blog.content) };
 };
 
 export const getBlogs = async (options = {}) => {

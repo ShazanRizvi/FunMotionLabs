@@ -1,13 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import MainText from '../AppComponents/Hero/MainText'
 import BlogSearchInput from '../AppComponents/BlogSearchInput'
 import { blogs } from '@/lib/blogs.js'
+import { useBlogsListingStore } from '@/store/useListingStore'
 
 const BlogsHome = () => {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [activeFilter, setActiveFilter] = useState('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const currentPage = useBlogsListingStore((state) => state.currentPage)
+  const activeFilter = useBlogsListingStore((state) => state.activeFilter)
+  const searchQuery = useBlogsListingStore((state) => state.searchQuery)
+  const setCurrentPage = useBlogsListingStore((state) => state.setCurrentPage)
+  const setActiveFilter = useBlogsListingStore((state) => state.setActiveFilter)
+  const setSearchQuery = useBlogsListingStore((state) => state.setSearchQuery)
   const cardsPerPage = 6
 
   const getInitials = (name) => {
@@ -181,10 +185,6 @@ const BlogsHome = () => {
     startIndex,
     startIndex + cardsPerPage
   )
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [activeFilter, searchQuery])
 
   useEffect(() => {
     if (currentPage > totalPages) {

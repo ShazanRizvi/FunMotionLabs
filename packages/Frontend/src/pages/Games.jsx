@@ -1,13 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import MainText from '../AppComponents/Hero/MainText'
 import BlogSearchInput from '../AppComponents/BlogSearchInput'
 import { games } from '@/lib/games.js'
+import { useGamesListingStore } from '@/store/useListingStore'
 
 const Games = () => {
-  const [currentPage, setCurrentPage] = useState(1)
-  const [activeFilter, setActiveFilter] = useState('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const currentPage = useGamesListingStore((state) => state.currentPage)
+  const activeFilter = useGamesListingStore((state) => state.activeFilter)
+  const searchQuery = useGamesListingStore((state) => state.searchQuery)
+  const setCurrentPage = useGamesListingStore((state) => state.setCurrentPage)
+  const setActiveFilter = useGamesListingStore((state) => state.setActiveFilter)
+  const setSearchQuery = useGamesListingStore((state) => state.setSearchQuery)
   const cardsPerPage = 6
   const heroBackgroundGif = 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZWRjeTI4d2FncDI1ZnRiMnowdTB4M29hYzlwczR2dW94dXFqMG5leSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/KG9y6LHirezDpPj6he/giphy.gif'
   const gameCardGifs = [
@@ -183,10 +187,6 @@ const Games = () => {
     startIndex,
     startIndex + cardsPerPage
   )
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [activeFilter, searchQuery])
 
   useEffect(() => {
     if (currentPage > totalPages) {
