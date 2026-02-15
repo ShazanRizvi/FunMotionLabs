@@ -2,10 +2,14 @@ import React, { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import MainText from '../AppComponents/Hero/MainText'
 import BlogSearchInput from '../AppComponents/BlogSearchInput'
-import { blogs } from '@/lib/blogs.js'
 import { useBlogsListingStore } from '@/store/useListingStore'
 
 const BlogsHome = () => {
+  const items = useBlogsListingStore((state) => state.items)
+  const isLoading = useBlogsListingStore((state) => state.isLoading)
+  const hasLoaded = useBlogsListingStore((state) => state.hasLoaded)
+  const error = useBlogsListingStore((state) => state.error)
+  const fetchItems = useBlogsListingStore((state) => state.fetchItems)
   const currentPage = useBlogsListingStore((state) => state.currentPage)
   const activeFilter = useBlogsListingStore((state) => state.activeFilter)
   const searchQuery = useBlogsListingStore((state) => state.searchQuery)
@@ -152,7 +156,7 @@ const BlogsHome = () => {
   }
 
   const filteredBlogs = useMemo(() => {
-    let nextBlogs = blogs
+    let nextBlogs = items
 
     if (activeFilter === 'recent') {
       nextBlogs = [...nextBlogs].sort(
@@ -170,11 +174,11 @@ const BlogsHome = () => {
     }
 
     return nextBlogs.filter((blog) => {
-      const titleMatch = blog.title.toLowerCase().includes(query)
-      const excerptMatch = blog.excerpt.toLowerCase().includes(query)
+      const titleMatch = (blog.title || "").toLowerCase().includes(query)
+      const excerptMatch = (blog.excerpt || "").toLowerCase().includes(query)
       return titleMatch || excerptMatch
     })
-  }, [activeFilter, searchQuery])
+  }, [activeFilter, searchQuery, items])
 
   const totalPages = Math.max(
     1,
@@ -187,10 +191,16 @@ const BlogsHome = () => {
   )
 
   useEffect(() => {
+    if (!hasLoaded) {
+      fetchItems()
+    }
+  }, [hasLoaded, fetchItems])
+
+  useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages)
     }
-  }, [currentPage, totalPages])
+  }, [currentPage, totalPages, setCurrentPage])
 
   return (
     <div className='flex flex-col w-full min-h-screen'>
@@ -252,6 +262,16 @@ const BlogsHome = () => {
 
       {/* Bottom Text Section - Cards below image */}
       <div className='relative z-0  pt-10 pb-12'>
+        {isLoading && (
+          <div className="max-w-6xl mx-auto px-6 py-8 text-center text-gray-600 outfit-regular">
+            Loading blogs...
+          </div>
+        )}
+        {!isLoading && error && (
+          <div className="max-w-6xl mx-auto px-6 py-8 text-center text-red-600 outfit-regular">
+            {error}
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-6 max-w-6xl mx-auto">
           {pagedBlogs.map((blog) => (
             <Link
@@ -263,20 +283,20 @@ const BlogsHome = () => {
               <div className="bg-white/80 backdrop-blur-sm rounded-4xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-2">
 
                 <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover rounded-xl mb-4 group-hover:scale-105 transition-transform duration-300" />
-                <span className="text-sm text-primary-blue outfit-regular">{blog.date}</span>
-                <h3 className="font-bold text-xl mb-2 line-clamp-2 outfit-regular">{blog.title}</h3>
-                <p className="text-gray-600 mb-4 text-sm line-clamp-3 outfit-regular">{blog.excerpt}</p>
+                <span className="text-sm text-primary-blue outfit-regular">{blog.date || ""}</span>
+                <h3 className="font-bold text-xl mb-2 line-clamp-2 outfit-regular">{blog.title || "Untitled Blog"}</h3>
+                <p className="text-gray-600 mb-4 text-sm line-clamp-3 outfit-regular">{blog.excerpt || ""}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1 ">
                     <div className="w-6 h-6 rounded-full bg-primary-blue/10 text-primary-blue text-xs font-semibold flex items-center justify-center">
                       {getInitials(blog.author)}
                     </div>
                     <div className="text-sm text-gray-700 font-medium outfit-regular">
-                      {blog.author}
+                      {blog.author || "FunMotion Labs"}
                     </div>
                   </div>
                   <span className="px-1 py-1 text-sm text-neutral-300 outfit-regular rounded-full font-medium transition-all">
-                    {blog.readTime}
+                    {blog.readTime || ""}
                   </span>
                 </div>
               </div>

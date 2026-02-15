@@ -2,10 +2,14 @@ import React, { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import MainText from '../AppComponents/Hero/MainText'
 import BlogSearchInput from '../AppComponents/BlogSearchInput'
-import { games } from '@/lib/games.js'
 import { useGamesListingStore } from '@/store/useListingStore'
 
 const Games = () => {
+  const items = useGamesListingStore((state) => state.items)
+  const isLoading = useGamesListingStore((state) => state.isLoading)
+  const hasLoaded = useGamesListingStore((state) => state.hasLoaded)
+  const error = useGamesListingStore((state) => state.error)
+  const fetchItems = useGamesListingStore((state) => state.fetchItems)
   const currentPage = useGamesListingStore((state) => state.currentPage)
   const activeFilter = useGamesListingStore((state) => state.activeFilter)
   const searchQuery = useGamesListingStore((state) => state.searchQuery)
@@ -153,7 +157,7 @@ const Games = () => {
   }
 
   const filteredGames = useMemo(() => {
-    let nextGames = games
+    let nextGames = items
 
     if (activeFilter === 'recent') {
       nextGames = [...nextGames].sort(
@@ -171,12 +175,12 @@ const Games = () => {
     }
 
     return nextGames.filter((game) => {
-      const titleMatch = game.title.toLowerCase().includes(query)
-      const genreMatch = game.genre.toLowerCase().includes(query)
-      const studioMatch = game.studio.toLowerCase().includes(query)
+      const titleMatch = (game.title || "").toLowerCase().includes(query)
+      const genreMatch = (game.genre || "").toLowerCase().includes(query)
+      const studioMatch = (game.studio || "").toLowerCase().includes(query)
       return titleMatch || genreMatch || studioMatch
     })
-  }, [activeFilter, searchQuery])
+  }, [activeFilter, searchQuery, items])
 
   const totalPages = Math.max(
     1,
@@ -189,10 +193,16 @@ const Games = () => {
   )
 
   useEffect(() => {
+    if (!hasLoaded) {
+      fetchItems()
+    }
+  }, [hasLoaded, fetchItems])
+
+  useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages)
     }
-  }, [currentPage, totalPages])
+  }, [currentPage, totalPages, setCurrentPage])
 
   return (
     <div className='flex flex-col w-full min-h-screen'>
@@ -250,8 +260,18 @@ const Games = () => {
       </div>
 
       <div className='relative z-0 pt-10 pb-12'>
+        {isLoading && (
+          <div className="max-w-6xl mx-auto px-6 py-8 text-center text-gray-600 outfit-regular">
+            Loading games...
+          </div>
+        )}
+        {!isLoading && error && (
+          <div className="max-w-6xl mx-auto px-6 py-8 text-center text-red-600 outfit-regular">
+            {error}
+          </div>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-6 max-w-6xl mx-auto">
-          {pagedGames.map((game) => (
+          {pagedGames.map((game, index) => (
             <Link
               key={game.id}
               to={`/games/${game.id}`}
@@ -260,7 +280,7 @@ const Games = () => {
             >
               <div className="relative w-full h-48 rounded-xl mb-4 overflow-hidden">
                 <img
-                  src={gameCardGifs[game.id % gameCardGifs.length]}
+                  src={gameCardGifs[index % gameCardGifs.length]}
                   alt={game.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
