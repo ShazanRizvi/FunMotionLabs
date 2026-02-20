@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import multer from 'multer';
 import { initDatabase, disconnectDatabase } from './lib/db-init.js';
 import prisma from './lib/prisma.js';
 import blogRoutes from './routes/blogRoutes.js';
@@ -32,8 +33,8 @@ app.use(
     credentials: true
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
@@ -56,6 +57,25 @@ app.get('/health', async (req, res) => {
 
 app.use('/api', blogRoutes);
 app.use('/api', gamesRoutes);
+
+app.use((err, req, res, next) => {
+  if (err?.type === 'entity.too.large') {
+    return res.status(413).json({
+      message: 'Request body too large. Use multipart/form-data for media uploads.'
+    });
+  }
+
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({
+        message: 'File too large. Max allowed size is 100MB per file.'
+      });
+    }
+    return res.status(400).json({ message: `Upload error: ${err.message}` });
+  }
+
+  return next(err);
+});
 
 // Start server
 app.listen(PORT, '0.0.0.0', async () => {

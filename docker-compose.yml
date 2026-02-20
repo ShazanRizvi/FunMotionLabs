@@ -50,6 +50,7 @@ services:
     volumes:
       - ./packages/server:/app
       - /app/node_modules
+      - /Users/shivangidubey/Downloads/funmotionlabs-a49988524d94.json:/run/secrets/gcs-key.json:ro
     env_file:
       - .env
     environment:

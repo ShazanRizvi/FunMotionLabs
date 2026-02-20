@@ -1,4 +1,5 @@
 import prisma from '../lib/prisma.js';
+import { uploadAssetIfNeeded } from '../lib/gcsStorage.js';
 
 const parseReadTime = (readTime) => {
   if (readTime == null) return undefined;
@@ -153,16 +154,26 @@ export const getBlogById = async (id, options = {}) => {
 };
 
 export const createBlog = async (data) => {
+  const uploadReadyData = { ...data };
+  if (uploadReadyData.image !== undefined) {
+    uploadReadyData.image = await uploadAssetIfNeeded(uploadReadyData.image, 'blogs/images');
+  }
+
   const blog = await prisma.blogs.create({
-    data: normalizeBlogInput(data)
+    data: normalizeBlogInput(uploadReadyData)
   });
   return deserializeBlog(blog);
 };
 
 export const updateBlog = async (id, data) => {
+  const uploadReadyData = { ...data };
+  if (uploadReadyData.image !== undefined) {
+    uploadReadyData.image = await uploadAssetIfNeeded(uploadReadyData.image, 'blogs/images');
+  }
+
   const blog = await prisma.blogs.update({
     where: { id },
-    data: normalizeBlogInput(data)
+    data: normalizeBlogInput(uploadReadyData)
   });
   return deserializeBlog(blog);
 };

@@ -1,4 +1,5 @@
 import * as blogService from '../services/blog.js';
+import { buildBlogMultipartPayload } from '../lib/uploadMiddleware.js';
 
 const getBlogs = async (req, res, next) => {
   try {
@@ -52,7 +53,8 @@ const getBlogById = async (req, res, next) => {
 
 const createBlog = async (req, res, next) => {
   try {
-    const blog = await blogService.createBlog(req.body);
+    const payload = buildBlogMultipartPayload(req);
+    const blog = await blogService.createBlog(payload);
     res.status(201).json({ data: blog });
   } catch (error) {
     next(error);
@@ -61,7 +63,8 @@ const createBlog = async (req, res, next) => {
 
 const updateBlog = async (req, res, next) => {
   try {
-    const blog = await blogService.updateBlog(req.params.id, req.body);
+    const payload = buildBlogMultipartPayload(req);
+    const blog = await blogService.updateBlog(req.params.id, payload);
     res.json({ data: blog });
   } catch (error) {
     next(error);

@@ -41,3 +41,9 @@ export const fetchGamesList = async () => {
   const rows = Array.isArray(response?.data) ? response.data : [];
   return rows.map(normalizeGame);
 };
+
+export const fetchFeaturedGames = async () => {
+  const response = await callAPI("GET", "/api/games?isFeatured=true");
+  const rows = Array.isArray(response?.data) ? response.data : [];
+  return rows.map(normalizeGame);
+};
