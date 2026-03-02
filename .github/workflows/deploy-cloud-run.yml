@@ -1,0 +1,75 @@
+name: Deploy Cloud Run
+
+on:
+  push:
+    branches:
+      - "**"
+
+env:
+  GCP_PROJECT_ID: YOUR_GCP_PROJECT_ID
+  GCP_REGION: us-central1
+  AR_REPO: funmotionlabs
+  IMAGE_NAME: funmotionlabs
+  PROD_SERVICE: funmotionlabs
+  SERVICE_PREFIX: funmotion
+  CLOUDSQL_INSTANCE: YOUR_GCP_PROJECT_ID:us-central1:funmotionlabs-pg
+  RUN_SERVICE_ACCOUNT: funmotionlabs-run@YOUR_GCP_PROJECT_ID.iam.gserviceaccount.com
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # Configure one auth mechanism:
+      # 1) workload_identity_provider + service_account (recommended), or
+      # 2) credentials_json from a service account key.
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker auth
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        run: |
+          IMAGE_URI="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${AR_REPO}/${IMAGE_NAME}:${GITHUB_SHA}"
+          docker build -f Dockerfile.prod -t "${IMAGE_URI}" .
+          docker push "${IMAGE_URI}"
+          echo "IMAGE_URI=${IMAGE_URI}" >> "$GITHUB_ENV"
+
+      - name: Deploy to Cloud Run
+        run: |
+          RAW_BRANCH="${GITHUB_REF_NAME}"
+          SAFE_BRANCH="$(echo "$RAW_BRANCH" | tr '[:upper:]' '[:lower:]' | sed 's#[^a-z0-9-]#-#g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-40)"
+          if [ -z "$SAFE_BRANCH" ]; then SAFE_BRANCH="preview"; fi
+
+          if [ "$RAW_BRANCH" = "main" ] || [ "$RAW_BRANCH" = "master" ] || [ "$RAW_BRANCH" = "v2-develop" ]; then
+            SERVICE_NAME="${PROD_SERVICE}"
+          else
+            SERVICE_NAME="${SERVICE_PREFIX}-${SAFE_BRANCH}"
+          fi
+
+          gcloud run deploy "${SERVICE_NAME}" \
+            --project="${GCP_PROJECT_ID}" \
+            --region="${GCP_REGION}" \
+            --platform=managed \
+            --image="${IMAGE_URI}" \
+            --service-account="${RUN_SERVICE_ACCOUNT}" \
+            --allow-unauthenticated \
+            --port=8080 \
+            --concurrency=80 \
+            --min-instances=0 \
+            --max-instances=3 \
+            --cpu=1 \
+            --memory=512Mi \
+            --timeout=300 \
+            --add-cloudsql-instances="${CLOUDSQL_INSTANCE}" \
+            --set-env-vars="NODE_ENV=production,PORT=8080,FRONTEND_DIST=/app/packages/Frontend/dist" \
+            --set-secrets="DATABASE_URL=funmotionlabs-database-url:latest"

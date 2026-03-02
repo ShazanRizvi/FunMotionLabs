@@ -1,0 +1,47 @@
+FROM node:20-bookworm-slim AS builder
+
+WORKDIR /app
+
+# Install workspace dependencies once for the monorepo build.
+COPY package*.json lerna.json ./
+COPY packages/server/package*.json packages/server/
+COPY packages/Frontend/package*.json packages/Frontend/
+RUN npm ci
+
+# Copy repository contents and build all packages.
+COPY . .
+RUN npm run build
+
+# Prepare Prisma client for runtime image.
+RUN cd packages/server && npx prisma generate --schema=prisma/schema.prisma
+
+FROM node:20-bookworm-slim AS runner
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Install production dependencies only.
+COPY package*.json lerna.json ./
+COPY packages/server/package*.json packages/server/
+COPY packages/Frontend/package*.json packages/Frontend/
+RUN npm ci --omit=dev
+
+# Copy runtime app files from builder.
+COPY --from=builder /app/packages/Frontend/dist /app/packages/Frontend/dist
+COPY --from=builder /app/packages/server/src /app/packages/server/src
+COPY --from=builder /app/packages/server/prisma /app/packages/server/prisma
+COPY --from=builder /app/packages/server/node_modules /app/packages/server/node_modules
+COPY --from=builder /app/node_modules/.prisma /app/node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma /app/node_modules/@prisma
+COPY packages/server/docker-entrypoint.cloudrun.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh && \
+    groupadd -g 1001 nodejs && \
+    useradd -m -u 1001 -g nodejs nodejs && \
+    chown -R nodejs:nodejs /app /entrypoint.sh
+
+USER nodejs
+
+EXPOSE 8080
+
+ENTRYPOINT ["/entrypoint.sh"]
