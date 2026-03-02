@@ -32,22 +32,22 @@ steps:
       - -ceu
       - |
         RAW_BRANCH="${BRANCH_NAME:-manual}"
-        SAFE_BRANCH="$(echo "$RAW_BRANCH" | tr '[:upper:]' '[:lower:]' | sed 's#[^a-z0-9-]#-#g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-40)"
-        if [ -z "$SAFE_BRANCH" ]; then SAFE_BRANCH="preview"; fi
+        SAFE_BRANCH="$(echo "$$RAW_BRANCH" | tr '[:upper:]' '[:lower:]' | sed 's#[^a-z0-9-]#-#g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-40)"
+        if [ -z "$$SAFE_BRANCH" ]; then SAFE_BRANCH="preview"; fi
 
-        if [ "$RAW_BRANCH" = "main" ] || [ "$RAW_BRANCH" = "master" ] || [ "$RAW_BRANCH" = "v2-develop" ]; then
+        if [ "$$RAW_BRANCH" = "main" ] || [ "$$RAW_BRANCH" = "master" ] || [ "$$RAW_BRANCH" = "v2-develop" ]; then
           SERVICE_NAME="${_PROD_SERVICE}"
         else
-          SERVICE_NAME="${_SERVICE_PREFIX}-${SAFE_BRANCH}"
+          SERVICE_NAME="${_SERVICE_PREFIX}-$$SAFE_BRANCH"
         fi
 
         IMAGE_URI="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA"
 
-        gcloud run deploy "$SERVICE_NAME" \
+        gcloud run deploy "$$SERVICE_NAME" \
           --project="$PROJECT_ID" \
           --region="${_REGION}" \
           --platform=managed \
-          --image="$IMAGE_URI" \
+          --image="$$IMAGE_URI" \
           --service-account="${_RUN_SA}" \
           --allow-unauthenticated \
           --port=8080 \
@@ -61,7 +61,7 @@ steps:
           --set-env-vars="NODE_ENV=production,PORT=8080,FRONTEND_DIST=/app/packages/Frontend/dist" \
           --set-secrets="DATABASE_URL=${_DATABASE_URL_SECRET}:latest"
 
-        gcloud run services describe "$SERVICE_NAME" \
+        gcloud run services describe "$$SERVICE_NAME" \
           --project="$PROJECT_ID" \
           --region="${_REGION}" \
           --format='value(status.url)'
