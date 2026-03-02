@@ -68,6 +68,8 @@ gcloud sql instances create "$SQL_INSTANCE" \
 
 gcloud sql databases create "$DB_NAME" --instance="$SQL_INSTANCE" || true
 gcloud sql users create "$DB_USER" --instance="$SQL_INSTANCE" --password="$DB_PASS" || true
+# Ensure password is correct even when user already exists.
+gcloud sql users set-password "$DB_USER" --instance="$SQL_INSTANCE" --password="$DB_PASS"
 
 # IAM for runtime SA (Cloud SQL access + requested editor role)
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
@@ -92,8 +94,8 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:${CLOUDBUILD_SA}" \
   --role="roles/secretmanager.secretAccessor"
 
-# Secret Manager: Unix socket DATABASE_URL for Cloud Run
-DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@/${DB_NAME}?host=/cloudsql/${PROJECT_ID}:${REGION}:${SQL_INSTANCE}"
+# Secret Manager: Unix socket DATABASE_URL for Cloud Run (Prisma-friendly form).
+DATABASE_URL="postgresql://${DB_USER}:${DB_PASS}@localhost/${DB_NAME}?host=/cloudsql/${PROJECT_ID}:${REGION}:${SQL_INSTANCE}"
 if ! gcloud secrets describe "$DB_URL_SECRET" >/dev/null 2>&1; then
   printf '%s' "$DATABASE_URL" | gcloud secrets create "$DB_URL_SECRET" --data-file=-
 fi
