@@ -1,4 +1,5 @@
 import prisma from '../lib/prisma.js';
+import { uploadAssetArrayIfNeeded, uploadAssetIfNeeded } from '../lib/gcsStorage.js';
 
 const parseDate = (value) => {
   if (!value) return undefined;
@@ -132,11 +133,51 @@ export const getGameById = async (id, options = {}) => {
   return prisma.games.findFirst({ where });
 };
 
-export const createGame = async (data) =>
-  prisma.games.create({ data: normalizeGameInput(data) });
+const uploadGameAssets = async (data) => {
+  const uploadReadyData = { ...data };
+
+  if (uploadReadyData.image !== undefined) {
+    uploadReadyData.image = await uploadAssetIfNeeded(uploadReadyData.image, 'games/images/main');
+  }
+  if (uploadReadyData.cardImageUrl !== undefined) {
+    uploadReadyData.cardImageUrl = await uploadAssetIfNeeded(
+      uploadReadyData.cardImageUrl,
+      'games/images/cards'
+    );
+  }
+  if (uploadReadyData.bannerImageUrl !== undefined) {
+    uploadReadyData.bannerImageUrl = await uploadAssetIfNeeded(
+      uploadReadyData.bannerImageUrl,
+      'games/images/banners'
+    );
+  }
+
+  const heroVideos = normalizeStringArray(uploadReadyData.heroVideoUrls);
+  if (heroVideos !== undefined) {
+    uploadReadyData.heroVideoUrls = await uploadAssetArrayIfNeeded(heroVideos, 'games/videos/heroes');
+  }
+
+  const detailImages = normalizeStringArray(uploadReadyData.detailImageUrls);
+  if (detailImages !== undefined) {
+    uploadReadyData.detailImageUrls = await uploadAssetArrayIfNeeded(
+      detailImages,
+      'games/images/details'
+    );
+  }
+
+  return uploadReadyData;
+};
+
+export const createGame = async (data) => {
+  const uploadReadyData = await uploadGameAssets(data);
+  return prisma.games.create({ data: normalizeGameInput(uploadReadyData) });
+};
 
 export const updateGame = async (id, data) =>
-  prisma.games.update({ where: { id }, data: normalizeGameInput(data) });
+  prisma.games.update({
+    where: { id },
+    data: normalizeGameInput(await uploadGameAssets(data))
+  });
 
 export const deleteGame = async (id, options = {}) => {
   const { hard = false } = options;

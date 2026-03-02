@@ -1,4 +1,5 @@
 import * as gamesService from '../services/gamesService.js';
+import { buildGamesMultipartPayload } from '../lib/uploadMiddleware.js';
 
 const getGames = async (req, res, next) => {
   try {
@@ -52,7 +53,8 @@ const getGameById = async (req, res, next) => {
 
 const createGame = async (req, res, next) => {
   try {
-    const game = await gamesService.createGame(req.body);
+    const payload = buildGamesMultipartPayload(req);
+    const game = await gamesService.createGame(payload);
     res.status(201).json({ data: game });
   } catch (error) {
     next(error);
@@ -61,7 +63,8 @@ const createGame = async (req, res, next) => {
 
 const updateGame = async (req, res, next) => {
   try {
-    const game = await gamesService.updateGame(req.params.id, req.body);
+    const payload = buildGamesMultipartPayload(req);
+    const game = await gamesService.updateGame(req.params.id, payload);
     res.json({ data: game });
   } catch (error) {
     next(error);
