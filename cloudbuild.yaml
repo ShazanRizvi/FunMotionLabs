@@ -58,7 +58,7 @@ steps:
           --memory=512Mi \
           --timeout=300 \
           --add-cloudsql-instances="${_CLOUDSQL_INSTANCE}" \
-          --set-env-vars="NODE_ENV=production,PORT=8080,FRONTEND_DIST=/app/packages/Frontend/dist" \
+          --set-env-vars="NODE_ENV=production,FRONTEND_DIST=/app/packages/Frontend/dist" \
           --set-secrets="DATABASE_URL=${_DATABASE_URL_SECRET}:latest"
 
         gcloud run services describe "$$SERVICE_NAME" \

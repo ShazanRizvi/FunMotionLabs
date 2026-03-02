@@ -71,5 +71,5 @@ jobs:
             --memory=512Mi \
             --timeout=300 \
             --add-cloudsql-instances="${CLOUDSQL_INSTANCE}" \
-            --set-env-vars="NODE_ENV=production,PORT=8080,FRONTEND_DIST=/app/packages/Frontend/dist" \
+            --set-env-vars="NODE_ENV=production,FRONTEND_DIST=/app/packages/Frontend/dist" \
             --set-secrets="DATABASE_URL=funmotionlabs-database-url:latest"
